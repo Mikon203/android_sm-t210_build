@@ -5,9 +5,9 @@ export DEBIAN_FRONTEND=noninteractive
 apt-get update -qq
 apt-get install -y -qq git-core gnupg flex bison gperf build-essential zip curl zlib1g-dev \
   gcc-multilib g++-multilib libc6-dev-i386 lib32ncurses5-dev x11proto-core-dev libx11-dev \
-  lib32z1-dev ccache libgl1-mesa-dev libxml2-utils xsltproc unzip openjdk-7-jdk python bc \
+  lib32z1-dev ccache libgl1-mesa-dev libxml2-utils xsltproc unzip openjdk-8-jdk python bc \
   rsync schedtool squashfs-tools imagemagick libssl-dev lzop
-export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64
+export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
 export PATH=$JAVA_HOME/bin:$PATH
 export LC_ALL=C
 export ALLOW_MISSING_DEPENDENCIES=true
