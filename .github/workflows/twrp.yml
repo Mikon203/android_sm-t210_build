@@ -1,0 +1,65 @@
+name: Build TWRP (lt02 / SM-T210)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /usr/local/share/boost "$AGENT_TOOLSDIRECTORY"
+          df -h /
+
+      - name: Git identity
+        run: |
+          git config --global user.name "ci"
+          git config --global user.email "ci@users.noreply.github.com"
+          git config --global color.ui false
+
+      - name: Sync TWRP 5.1 source
+        run: |
+          mkdir -p "$HOME/bin" "$HOME/twrp"
+          curl -s https://storage.googleapis.com/git-repo-downloads/repo > "$HOME/bin/repo"
+          chmod +x "$HOME/bin/repo"
+          cd "$HOME/twrp"
+          "$HOME/bin/repo" init --depth=1 -u https://github.com/minimal-manifest-twrp/platform_manifest_twrp_omni.git -b twrp-5.1
+          mkdir -p .repo/local_manifests
+          cp "$GITHUB_WORKSPACE/manifests/lt02.xml" .repo/local_manifests/
+          "$HOME/bin/repo" sync -c -j8 --force-sync --no-clone-bundle --no-tags
+          df -h /
+
+      - name: Restore ccache
+        uses: actions/cache@v4
+        with:
+          path: ~/.ccache
+          key: ccache-twrp-lt02-${{ github.run_id }}
+          restore-keys: ccache-twrp-lt02-
+
+      - name: Build recovery (ubuntu 16.04 container)
+        run: |
+          mkdir -p "$HOME/.ccache"
+          docker run --rm \
+            -v "$HOME/twrp:/twrp" \
+            -v "$GITHUB_WORKSPACE/scripts:/scripts" \
+            -v "$HOME/.ccache:/root/.ccache" \
+            ubuntu:16.04 bash /scripts/build-twrp.sh
+
+      - name: Package
+        run: |
+          mkdir -p dist
+          cp "$HOME/twrp/out/target/product/lt02/recovery.img" dist/
+          cd dist
+          tar -H ustar -c recovery.img > twrp-lt02.tar
+          md5sum -t twrp-lt02.tar >> twrp-lt02.tar
+          mv twrp-lt02.tar twrp-lt02.tar.md5
+          ls -lh
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: twrp-lt02
+          path: dist/*

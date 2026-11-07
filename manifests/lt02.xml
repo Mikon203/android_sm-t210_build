@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest>
+  <remote name="twrpdev" fetch="https://github.com/TeamWin" />
+  <project name="android_device_samsung_lt02" path="device/samsung/lt02" remote="twrpdev" revision="android-5.1" />
+</manifest>
