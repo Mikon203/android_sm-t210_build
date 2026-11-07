@@ -20,4 +20,9 @@ set +e
 source build/envsetup.sh
 set -e
 lunch omni_lt02-eng
-mka recoveryimage -j"$(nproc)"
+echo "TARGET_GLOBAL_CPPFLAGS = $(get_build_var TARGET_GLOBAL_CPPFLAGS)"
+if ! mka recoveryimage -j"$(nproc)"; then
+  echo "=== BUILD FAILED: dumping compile command for partition.o ==="
+  mka -j1 /twrp/out/target/product/lt02/obj/EXECUTABLES/recovery_intermediates/partition.o showcommands 2>&1 | grep -E "partition\.cpp" | grep -E "clang|g\+\+" | head -3 | cut -c1-1800
+  exit 1
+fi
