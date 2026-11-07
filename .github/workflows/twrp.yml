@@ -33,6 +33,15 @@ jobs:
           "$HOME/bin/repo" sync -c -j8 --force-sync --no-clone-bundle --no-tags
           df -h /
 
+      - name: Source info and C++11 workaround
+        run: |
+          cd "$HOME/twrp"
+          git -C bootable/recovery remote -v | head -2
+          git -C bootable/recovery log -1 --format='%h %ad %s'
+          grep -n 'std=' bootable/recovery/Android.mk || echo "no std flag in recovery Android.mk"
+          grep -n nullptr bootable/recovery/partition.cpp | head -3
+          echo 'TARGET_GLOBAL_CPPFLAGS += -std=gnu++11' >> device/samsung/lt02/BoardConfig.mk
+
       - name: Restore ccache
         uses: actions/cache@v4
         with:
